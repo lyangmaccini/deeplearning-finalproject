@@ -33,6 +33,7 @@ def generate_data_black_scholes(num_samples):
     
     return [inputs, labels]
 
+# not done
 def generate_data_heston(num_samples):
     inputs = np.zeros((num_samples, 8))
     labels = np.zeros((num_samples, 1))
