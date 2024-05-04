@@ -50,7 +50,7 @@ options_pricing_model.compile(optimizer=Adam(learning_rate=0.001),
               loss='mean_squared_error',
               metrics=['mean_squared_error'
                     #    ,tf.keras.metrics.R2Score(class_aggregation="uniform_average", num_regressors=0, name="r2_score", dtype=tf.float32)
-                    #    ])
+                       ])
 
 lr_scheduler = LearningRateScheduler(lr_schedule, verbose=1)
 history = options_pricing_model.fit(X_train, Y_train, epochs=200, batch_size=1024, 
