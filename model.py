@@ -13,7 +13,9 @@ def lr_schedule(epoch, lr):
     return lr
 
 data = get_data('black-scholes', 1000000)
+# data = get_data('heston', 1000)
 X_train, Y_train, X_test, Y_test = data
+
 
 options_pricing_model = Sequential([
     Dense(512, input_dim=X_train.shape[1], kernel_regularizer=l2(0.01)),
@@ -41,13 +43,14 @@ options_pricing_model = Sequential([
     Activation('relu'),
     Dropout(0.3),
 
-    Dense(1, activation='linear')
+    Dense(1, activation='linear', dtype=tf.float32)
 ])
 
 options_pricing_model.compile(optimizer=Adam(learning_rate=0.001),
               loss='mean_squared_error',
               metrics=['mean_squared_error'
-                       ])
+                    #    ,tf.keras.metrics.R2Score(class_aggregation="uniform_average", num_regressors=0, name="r2_score", dtype=tf.float32)
+                    #    ])
 
 lr_scheduler = LearningRateScheduler(lr_schedule, verbose=1)
 history = options_pricing_model.fit(X_train, Y_train, epochs=200, batch_size=1024, 
