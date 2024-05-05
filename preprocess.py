@@ -69,6 +69,8 @@ def generate_data_heston(num_samples):
     inputs = np.zeros((num_samples, 8))
     labels = np.zeros((num_samples, 1))
 
+    percentile = 0
+
     for j in range(num_samples):
         # K = 1
         moneyness = random.uniform(0.6, 1.4) # m = S_0/K
@@ -88,7 +90,6 @@ def generate_data_heston(num_samples):
         y = math.log(moneyness)
 
         ten_percent = int(num_samples / 10)
-        percentile = 0
 
         c1 = long_average_variance + (1 - math.exp(-1 * reversion_speed) * (long_average_variance - initial_variance)/(2 * reversion_speed) - 0.5 * long_average_variance)
         c2 = (1/(8 * (reversion_speed ** 3))) * (volatility_of_volatility * reversion_speed * math.exp(-1 * reversion_speed) * (initial_variance - long_average_variance) * (8 * reversion_speed * correlation - 4 * volatility_of_volatility)
@@ -111,8 +112,10 @@ def generate_data_heston(num_samples):
 
         input = [moneyness, time_to_maturity, risk_free_rate, correlation, reversion_speed, long_average_variance, volatility_of_volatility, initial_variance]
         label = [european_call_price]
+
         inputs[j] = np.array(input)
         labels[j] = np.array(label)
+
         if j%ten_percent == 0:
             print(str(percentile) + "% done generating data")
             percentile += 10

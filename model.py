@@ -12,8 +12,8 @@ def lr_schedule(epoch, lr):
         return lr * 0.9
     return lr
 
-data = get_data('black-scholes', 1000000)
-# data = get_data('heston', 1000)
+# data = get_data('black-scholes', 1000000)
+data = get_data('heston', 100)
 X_train, Y_train, X_test, Y_test = data
 
 
