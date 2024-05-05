@@ -38,9 +38,9 @@ def generate_data_black_scholes(num_samples):
         label = [volatility]
         inputs[j] = np.array(input)
         labels[j] = np.array(label)
-        if j%ten_percent == 0:
-            print(str(percentile) + "% done generating data")
-            percentile += 10
+        # if j%ten_percent == 0:
+        #     print(str(percentile) + "% done generating data")
+        #     percentile += 10
     
     return [inputs, labels]
 
@@ -116,9 +116,9 @@ def generate_data_heston(num_samples):
         inputs[j] = np.array(input)
         labels[j] = np.array(label)
 
-        if j%ten_percent == 0:
-            print(str(percentile) + "% done generating data")
-            percentile += 10
+        # if j%ten_percent == 0:
+        #     print(str(percentile) + "% done generating data")
+        #     percentile += 10
     
     return [inputs, labels]
 

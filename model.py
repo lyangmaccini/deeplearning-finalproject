@@ -18,7 +18,7 @@ def r2score_fn(y_true, y_pred):
     return r2score(y_true, y_pred)
 
 data = get_data('black-scholes', 1000000)
-# data = get_data('heston', 100)
+# data = get_data('heston', 10)
 X_train, Y_train, X_test, Y_test = data
 
 options_pricing_model = Sequential([
@@ -56,8 +56,10 @@ options_pricing_model.compile(optimizer=Adam(learning_rate=0.001),
                        r2score_fn
                        ])
 
+csv_logger = tf.keras.callbacks.CSVLogger('black-scholes.log')
+
 lr_scheduler = LearningRateScheduler(lr_schedule, verbose=1)
 history = options_pricing_model.fit(X_train, Y_train, epochs=200, batch_size=1024, 
-                    validation_split=0.1, callbacks=[lr_scheduler])
+                    validation_split=0.1, callbacks=[lr_scheduler, csv_logger])
 test_loss, test_mse, test_r2score = options_pricing_model.evaluate(X_test, Y_test, verbose=2)
 predictions = options_pricing_model.predict(X_test)
