@@ -56,7 +56,7 @@ options_pricing_model.compile(optimizer=Adam(learning_rate=0.001),
                        r2score_fn
                        ])
 
-csv_logger = tf.keras.callbacks.CSVLogger('black-scholes.log')
+csv_logger = tf.keras.callbacks.CSVLogger('heston.log')
 
 lr_scheduler = LearningRateScheduler(lr_schedule, verbose=1)
 history = options_pricing_model.fit(X_train, Y_train, epochs=200, batch_size=1024, 

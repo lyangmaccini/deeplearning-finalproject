@@ -79,6 +79,36 @@ def phi_heston(omega, u_0, lambda_heston, u_bar, n, delta_t, rho, mu):
                                                - 2 * cmath.log10((1 - G * cmath.exp(-1 * D * delta_t)) / (1 - G)))
     return e1 * e2
 
+def generate_random():
+    moneyness = random.uniform(0.6, 1.4) # m = S_0/K
+    time_to_maturity = random.uniform(0.1, 1.4) # tau
+    risk_free_rate = random.uniform(0.0, 0.10) # r
+    correlation = random.uniform(-0.95, 0.0) # rho
+    reversion_speed = random.uniform(0.0, 2.0) # kappa
+    long_average_variance = random.uniform(0.0, 0.5) # v_bar
+    volatility_of_volatility = random.uniform(0.0, 0.5) # gamma
+    initial_variance = random.uniform(0.05, 0.5) # v_0
+    european_call_price = random.uniform(0.0, 0.67) # V
+    c1 = c_one(long_average_variance, reversion_speed, initial_variance)
+    c2 = c_two(reversion_speed, volatility_of_volatility, initial_variance, long_average_variance, correlation)
+    x = math.log(moneyness)
+    a = c1 - 12 * math.sqrt(abs(c2))
+    b = c1 + 12 * math.sqrt(abs(c2))
+    if b < 100:
+        return [moneyness, time_to_maturity, risk_free_rate, correlation, reversion_speed, long_average_variance, volatility_of_volatility, initial_variance, european_call_price, c1, c2, x, a, b]
+    else: 
+        return generate_random()
+
+def c_one(long_average_variance, reversion_speed, initial_variance):
+    return long_average_variance + (1 - math.exp(-1 * reversion_speed) * (long_average_variance - initial_variance)/(2 * reversion_speed) - 0.5 * long_average_variance)
+
+def c_two(reversion_speed, volatility_of_volatility, initial_variance, long_average_variance, correlation):
+    return (1/(8 * (reversion_speed ** 3))) * (volatility_of_volatility * reversion_speed * math.exp(-1 * reversion_speed) * (initial_variance - long_average_variance) * (8 * reversion_speed * correlation - 4 * volatility_of_volatility)
+            + reversion_speed * correlation * volatility_of_volatility * (1 - math.exp(-1 * reversion_speed)) * (16 * long_average_variance - 8 * initial_variance)
+            + 2 * long_average_variance * reversion_speed * (-4 * reversion_speed * correlation * volatility_of_volatility + volatility_of_volatility ** 2 + 4 * reversion_speed * reversion_speed)
+            + (volatility_of_volatility ** 2) * ((long_average_variance - 2 * initial_variance) * math.exp(-2 * reversion_speed) + long_average_variance * (6 * math.exp(-1 * reversion_speed) - 7) + 2 * initial_variance)
+            + 8 * (reversion_speed ** 2) * (initial_variance - long_average_variance) * (1 - math.exp(-1 * reversion_speed))
+            )
 
 def generate_data_heston(num_samples):
     inputs = np.zeros((num_samples, 8))
@@ -89,35 +119,12 @@ def generate_data_heston(num_samples):
 
     for j in range(num_samples):
         start_time = time.time()
-        # K = 1
-        moneyness = random.uniform(0.6, 1.4) # m = S_0/K
-        time_to_maturity = random.uniform(0.1, 1.4) # tau
-        risk_free_rate = random.uniform(0.0, 0.10) # r
-        correlation = random.uniform(-0.95, 0.0) # rho
-        reversion_speed = random.uniform(0.0, 2.0) # kappa
-        long_average_variance = random.uniform(0.0, 0.5) # v_bar
-        volatility_of_volatility = random.uniform(0.0, 0.5) # gamma
-        initial_variance = random.uniform(0.05, 0.5) # v_0
-        european_call_price = random.uniform(0.0, 0.67) # V
+        
+        moneyness, time_to_maturity, risk_free_rate, correlation, reversion_speed, long_average_variance, volatility_of_volatility, initial_variance, european_call_price, c1, c2, x, a, b = generate_random()
 
-        l_cos = 50
         n_cos = 1500
 
-        x = math.log(moneyness)
-        y = math.log(moneyness)
-
         ten_percent = int(num_samples / 10)
-
-        c1 = long_average_variance + (1 - math.exp(-1 * reversion_speed) * (long_average_variance - initial_variance)/(2 * reversion_speed) - 0.5 * long_average_variance)
-        c2 = (1/(8 * (reversion_speed ** 3))) * (volatility_of_volatility * reversion_speed * math.exp(-1 * reversion_speed) * (initial_variance - long_average_variance) * (8 * reversion_speed * correlation - 4 * volatility_of_volatility)
-            + reversion_speed * correlation * volatility_of_volatility * (1 - math.exp(-1 * reversion_speed)) * (16 * long_average_variance - 8 * initial_variance)
-            + 2 * long_average_variance * reversion_speed * (-4 * reversion_speed * correlation * volatility_of_volatility + volatility_of_volatility ** 2 + 4 * reversion_speed * reversion_speed)
-            + (volatility_of_volatility ** 2) * ((long_average_variance - 2 * initial_variance) * math.exp(-2 * reversion_speed) + long_average_variance * (6 * math.exp(-1 * reversion_speed) - 7) + 2 * initial_variance)
-            + 8 * (reversion_speed ** 2) * (initial_variance - long_average_variance) * (1 - math.exp(-1 * reversion_speed))
-            )
-
-        a = c1 - 12 * math.sqrt(abs(c2))
-        b = c1 + 12 * math.sqrt(abs(c2))
 
         complex_sum = 0
         for k in range(n_cos):
