@@ -6,6 +6,7 @@ from scipy.stats import norm
 from scipy.integrate import quad
 import cmath
 import time
+import csv
 
 i = complex(0, 1)
 
@@ -119,7 +120,7 @@ def generate_data_heston(num_samples):
 
     for j in range(num_samples):
         start_time = time.time()
-        
+
         moneyness, time_to_maturity, risk_free_rate, correlation, reversion_speed, long_average_variance, volatility_of_volatility, initial_variance, european_call_price, c1, c2, x, a, b = generate_random()
 
         n_cos = 1500
