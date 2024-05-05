@@ -5,6 +5,7 @@ import math
 from scipy.stats import norm
 from scipy.integrate import quad
 import cmath
+import time
 
 i = complex(0, 1)
 
@@ -26,6 +27,7 @@ def generate_data_black_scholes(num_samples):
     percentile = 0
 
     for j in range(num_samples):
+        start_time = time.time()
         stock_price = random.uniform(0.5, 1.4) # S_0/K
         time_to_maturity = random.uniform(0.05, 1.0) # tau
         risk_free_rate = random.uniform(0.0, 0.1) # r
@@ -38,6 +40,8 @@ def generate_data_black_scholes(num_samples):
         label = [volatility]
         inputs[j] = np.array(input)
         labels[j] = np.array(label)
+        if j == 1:
+            print(time.time() - start_time)
         # if j%ten_percent == 0:
         #     print(str(percentile) + "% done generating data")
         #     percentile += 10
@@ -48,30 +52,43 @@ def chi_integrand(y, k, a, b):
     return math.exp(y) * math.cos(k * math.pi * ((y - a)/(b - a)))
 
 def chi_k(k, a, b, c, d):
-    return quad(chi_integrand, c, d, args=(k, a, b))[0]
+    multiplier = 1 / (1 + ((k * math.pi) / (b - a)) ** 2)
+    sin_multiplier = k * math.pi / (b - a)
+    term1 = math.cos(k * math.pi * (d - a) / (b - a)) * math.exp(d) 
+    term2 = math.cos(k * math.pi * (c - a) / (b - a)) * math.exp(c) 
+    term3 = sin_multiplier * math.sin(k * math.pi * (d - a) / (b - a)) * math.exp(d)
+    term4 = sin_multiplier * math.sin(k * math.pi * (c - a) / (b - a)) * math.exp(c)
+
+    return multiplier * (term1 - term2 + term3 - term4)
 
 def psi_integrand(y, k, a, b):
     return math.cos(k * math.pi * ((y - a)/(b - a)))
 
 def psi_k(k, a, b, c, d):
-    return quad(psi_integrand, c, d, args=(k, a, b))[0]
+    if k == 0:
+        return d - c
+    else:
+        return (math.sin(k * math.pi * (d - a) / (b - a)) - math.sin( k * math.pi * (c - a) / (b - a))) * (b - a) / (k * math.pi)
 
 def phi_heston(omega, u_0, lambda_heston, u_bar, n, delta_t, rho, mu):
     D = cmath.sqrt((lambda_heston - i * rho * n * omega) ** 2 + (omega ** 2 + i * omega) * n * n)
     G = (lambda_heston - i * rho * n * omega - D) / (lambda_heston - i * rho * n * omega + D)
-    e1 = cmath.exp(i * omega * mu * delta_t + (u_0/(n ** 2)) * ((1 - cmath.exp(-1 * D * delta_t)) / (1 - G * cmath.exp(-1 * D * delta_t))) * (lambda_heston - i * rho * n * omega - D))
-    e2 = (lambda_heston * u_bar / (n ** 2)) * (delta_t * (lambda_heston - i * rho * n * omega - D) - 2 * cmath.log10((1 - G * cmath.exp(-1 * D * delta_t)) / (1 - G)))
+    e1 = cmath.exp(i * omega * mu * delta_t + (u_0/(n ** 2)) * ((1 - cmath.exp(-1 * D * delta_t)) / (1 - G * cmath.exp(-1 * D * delta_t))) 
+                   * (lambda_heston - i * rho * n * omega - D))
+    e2 = (lambda_heston * u_bar / (n ** 2)) * (delta_t * (lambda_heston - i * rho * n * omega - D) 
+                                               - 2 * cmath.log10((1 - G * cmath.exp(-1 * D * delta_t)) / (1 - G)))
     return e1 * e2
 
 
-# not done
 def generate_data_heston(num_samples):
     inputs = np.zeros((num_samples, 8))
     labels = np.zeros((num_samples, 1))
 
+    ten_percent = int(num_samples / 10)
     percentile = 0
 
     for j in range(num_samples):
+        start_time = time.time()
         # K = 1
         moneyness = random.uniform(0.6, 1.4) # m = S_0/K
         time_to_maturity = random.uniform(0.1, 1.4) # tau
@@ -116,9 +133,12 @@ def generate_data_heston(num_samples):
         inputs[j] = np.array(input)
         labels[j] = np.array(label)
 
-        # if j%ten_percent == 0:
-        #     print(str(percentile) + "% done generating data")
-        #     percentile += 10
+        if j == 1:
+            print(time.time() - start_time)
+
+        if j%ten_percent == 0:
+            print(str(percentile) + "% done generating data")
+            percentile += 10
     
     return [inputs, labels]
 
