@@ -14,13 +14,13 @@ def get_data(model, total_samples):
     # suggested total samples is 1,000,000
     data_generator = models[model]
     training_split = int(0.9 * total_samples)
-    train_inputs, train_labels = data_generator(training_split)
+    train_inputs, train_labels = data_generator(training_split, True)
     print("Training data generated.")
-    test_inputs, test_labels = data_generator(total_samples - training_split)
+    test_inputs, test_labels = data_generator(total_samples - training_split, False)
     print("Testing data generated.")
     return [train_inputs, train_labels, test_inputs, test_labels]
 
-def generate_data_black_scholes(num_samples):
+def generate_data_black_scholes(num_samples, training):
     inputs = np.zeros((num_samples, 4))
     labels = np.zeros((num_samples, 1))
 
@@ -43,9 +43,9 @@ def generate_data_black_scholes(num_samples):
         labels[j] = np.array(label)
         if j == 1:
             print(time.time() - start_time)
-        # if j%ten_percent == 0:
-        #     print(str(percentile) + "% done generating data")
-        #     percentile += 10
+        if j%ten_percent == 0:
+            print(str(percentile) + "% done generating data")
+            percentile += 10
     
     return [inputs, labels]
 
@@ -111,7 +111,7 @@ def c_two(reversion_speed, volatility_of_volatility, initial_variance, long_aver
             + 8 * (reversion_speed ** 2) * (initial_variance - long_average_variance) * (1 - math.exp(-1 * reversion_speed))
             )
 
-def generate_data_heston(num_samples):
+def generate_data_heston(num_samples, training):
     inputs = np.zeros((num_samples, 8))
     labels = np.zeros((num_samples, 1))
 
@@ -148,9 +148,33 @@ def generate_data_heston(num_samples):
             print(str(percentile) + "% done generating data")
             percentile += 10
     
+    print(inputs.shape)
+    with open('data-heston-inputs-10.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+        for line in inputs:
+            writer.writerow(line)
+    with open('data-heston-labels-10.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+        for line in labels:
+            writer.writerow(line)
     return [inputs, labels]
+
+def generate_preloaded_data(num_samples, training):
+    inputs = []
+    labels = []
+    with open('data-heston-inputs-100.csv') as csvfile:  
+        reader = csv.reader(csvfile)
+        for line in reader:
+            inputs.append(line)
+            
+    with open('data-heston-labels-100.csv') as csvfile:  
+        reader = csv.reader(csvfile)
+        for line in reader:
+            labels.append(line)
+    return [np.array(inputs).astype(np.float64), np.array(labels).astype(np.float64)]
 
 models = {
     'black-scholes': generate_data_black_scholes,
-    'heston': generate_data_heston
+    'heston': generate_data_heston,
+    'premade': generate_preloaded_data
 }

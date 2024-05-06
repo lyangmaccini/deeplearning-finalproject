@@ -6,6 +6,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import LearningRateScheduler
 from preprocess import get_data
+import time
 
 r2score = tf.keras.metrics.R2Score(class_aggregation="uniform_average", num_regressors=0, name="r2_score")
 
@@ -15,15 +16,15 @@ def lr_schedule(epoch, lr):
     return lr
 
 def r2score_fn(y_true, y_pred):
-    print(y_true)
-    print(y_pred)
     return r2score(y_true, y_pred)
 
 # data = get_data('black-scholes', 1000000)
-data = get_data('heston', 100)
+data = get_data('heston', 1000000)
+# data = get_data('premade', 100)
 X_train, Y_train, X_test, Y_test = data
 
 options_pricing_model = Sequential([
+    # better for Black-Scholes model
     Dense(512, input_dim=X_train.shape[1], kernel_regularizer=l2(0.01)),
     BatchNormalization(),
     Activation('relu'),
@@ -49,6 +50,23 @@ options_pricing_model = Sequential([
     Activation('relu'),
     Dropout(0.3),
 
+    # better for Heston model
+    # Dense(400, input_dim=X_train.shape[1], kernel_regularizer=l2(0.01)),
+    # Activation('relu'),
+    # Dropout(0.0),
+
+    # Dense(400, kernel_regularizer=l2(0.01)),
+    # Activation('relu'),
+    # Dropout(0.0),
+
+    # Dense(400, kernel_regularizer=l2(0.01)),
+    # Activation('relu'),
+    # Dropout(0.0),
+
+    # Dense(400, kernel_regularizer=l2(0.01)),
+    # Activation('relu'),
+    # Dropout(0.0),
+
     Dense(1, activation='linear')
 ])
 
@@ -58,7 +76,7 @@ options_pricing_model.compile(optimizer=Adam(learning_rate=0.001),
                        r2score_fn
                        ])
 
-csv_logger = tf.keras.callbacks.CSVLogger('heston.log')
+csv_logger = tf.keras.callbacks.CSVLogger('bj-2.log')
 
 lr_scheduler = LearningRateScheduler(lr_schedule, verbose=1)
 history = options_pricing_model.fit(X_train, Y_train, epochs=200, batch_size=1024, 
