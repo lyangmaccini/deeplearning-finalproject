@@ -18,9 +18,8 @@ def lr_schedule(epoch, lr):
 def r2score_fn(y_true, y_pred):
     return r2score(y_true, y_pred)
 
-# data = get_data('black-scholes', 1000000)
-data = get_data('heston', 1000000)
-# data = get_data('premade', 100)
+data = get_data('black-scholes', 1000000)
+# data = get_data('heston', 1000000)
 X_train, Y_train, X_test, Y_test = data
 
 options_pricing_model = Sequential([
@@ -49,23 +48,6 @@ options_pricing_model = Sequential([
     BatchNormalization(),
     Activation('relu'),
     Dropout(0.3),
-
-    # better for Heston model
-    # Dense(400, input_dim=X_train.shape[1], kernel_regularizer=l2(0.01)),
-    # Activation('relu'),
-    # Dropout(0.0),
-
-    # Dense(400, kernel_regularizer=l2(0.01)),
-    # Activation('relu'),
-    # Dropout(0.0),
-
-    # Dense(400, kernel_regularizer=l2(0.01)),
-    # Activation('relu'),
-    # Dropout(0.0),
-
-    # Dense(400, kernel_regularizer=l2(0.01)),
-    # Activation('relu'),
-    # Dropout(0.0),
 
     Dense(1, activation='linear')
 ])
